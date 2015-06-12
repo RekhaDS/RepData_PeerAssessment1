@@ -34,8 +34,11 @@ median(stepsEachDay,na.rm=TRUE)
 
 
 ## What is the average daily activity pattern?
+``` {r}
+dfPlotInterval <- aggregate(steps ~ interval, activity, mean, na.action = na.omit)
+plot(dfPlotInterval$interval, dfPlotInterval$steps, type='l', xlab="Interval", ylab="Number of steps")
 
-
+```
 
 ## Imputing missing values
 ```{r}
@@ -91,7 +94,6 @@ daysofweekDF <- rbind(weekdayPlot,weekendPlot)
 ```{r plot weekday/weekend }
 library(ggplot2)
 p <- ggplot(daysofweekDF, aes(interval, steps)) + geom_line()
-
 p + facet_grid(DaysofWeek ~ .)
 
 ```
