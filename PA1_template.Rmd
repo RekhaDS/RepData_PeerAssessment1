@@ -1,17 +1,36 @@
 ---
 title: "Reproducible Research: Peer Assessment 1"
 output: 
-  html_document:
-    keep_md: true
+html_document:
+keep_md: true
 ---
 
 
 ## Loading and preprocessing the data
 
 
+```{r Question1}
+activity <- read.csv("../activity.csv")
+
+stepsEachDay<-tapply(activity$steps, format(as.Date(activity$date),'%Y-%m-%d'), sum) 
+
+```
+
+## Plot the histogram for the average daily steps
+```{r histogram}
+
+hist(stepsEachDay)
+
+```
+
+
 
 ## What is mean total number of steps taken per day?
+```{r}
+mean(stepsEachDay,na.rm=TRUE)
+median(stepsEachDay,na.rm=TRUE)
 
+```
 
 
 ## What is the average daily activity pattern?
@@ -19,7 +38,62 @@ output:
 
 
 ## Imputing missing values
+```{r}
+## The real logic - imputing missing values
 
+# Get complete cases
+tobeupdatedactivity <- activity[complete.cases(activity),]
+
+##Get the mean for the 5 minute interval averaged across all days
+meanSteps <- aggregate(steps ~ interval, activity, mean, na.action = na.omit)
+
+## impute the missing values
+impute.v <- function(x,p) {
+  dat <- subset(activity, activity$interval==p & is.na(activity$steps))
+  rowI <- meanSteps[x,]
+  dat <- replace(dat, 1,rowI$steps)
+  return(dat)
+}
+
+for(i in 1:288) {
+  getRow <- meanSteps[i,]
+  replaceddata <- impute.v(i,getRow$interval)
+  tobeupdatedactivity <- rbind(replaceddata,tobeupdatedactivity)
+}
+
+
+## Histogram/mean/media for original data fram with imputed data
+stepsImputedData<-tapply(tobeupdatedactivity$steps, format(as.Date(tobeupdatedactivity$date),'%Y-%m-%d'), sum) 
+hist(stepsImputedData)
+mean(stepsImputedData)
+median(stepsImputedData)
+
+```
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+```{r}
+
+library(lubridate)
+
+
+weekdayPlot <- aggregate(steps ~ interval, data=subset(tobeupdatedactivity,wday(tobeupdatedactivity$date) > 1 & wday(tobeupdatedactivity$date) < 7 ), mean)
+
+weekendPlot <- aggregate(steps ~ interval, data=subset(tobeupdatedactivity,wday(tobeupdatedactivity$date) == 1 | wday(tobeupdatedactivity$date) == 7 ), mean)
+
+weekdayPlot$DaysofWeek <- c("weekday")
+weekendPlot$DaysofWeek <- c("weekend")
+
+daysofweekDF <- rbind(weekdayPlot,weekendPlot)
+
+```
+
+```{r plot weekday/weekend }
+library(ggplot2)
+p <- ggplot(daysofweekDF, aes(interval, steps)) + geom_line()
+
+p + facet_grid(DaysofWeek ~ .)
+
+```
+
+
