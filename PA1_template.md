@@ -10,45 +10,58 @@ date: "Thursday, June 11, 2015"
 ## Loading and preprocessing the data
 
 
-```{r ReadData}
+
+```r
 activity <- read.csv("../activity.csv")
 
 ## Get the steps sum for each day
 stepsEachDay<-tapply(activity$steps, format(as.Date(activity$date),'%Y-%m-%d'), sum) 
-
 ```
 
 ## Plot the histogram for the average daily steps
-```{r histogram}
+
+```r
 ## Histogram for the average daily steps
 hist(stepsEachDay, xlab="Average daily steps")
-
 ```
+
+![plot of chunk histogram](figure/histogram-1.png) 
 
 
 
 ## What is mean total number of steps taken per day?
-```{r MeanAndMedian}
 
+```r
 ##Get the mean for average daily steps
 mean(stepsEachDay,na.rm=TRUE)
+```
 
+```
+## [1] 10766.19
+```
+
+```r
 ## Get the median for average daily steps
 median(stepsEachDay,na.rm=TRUE)
+```
 
+```
+## [1] 10765
 ```
 
 
 ## What is the average daily activity pattern?
-``` {r dailypattern}
+
+```r
 dfPlotInterval <- aggregate(steps ~ interval, activity, mean, na.action = na.omit)
 plot(dfPlotInterval$interval, dfPlotInterval$steps, type='l', xlab="Interval", ylab="Number of steps")
-
 ```
 
-## Imputing missing values
-```{r impute}
+![plot of chunk dailypattern](figure/dailypattern-1.png) 
 
+## Imputing missing values
+
+```r
 # Get complete cases from activity data frame
 tobeupdatedactivity <- activity[complete.cases(activity),]
 
@@ -73,23 +86,34 @@ for(i in 1:288) {
 stepsImputedData<-tapply(tobeupdatedactivity$steps, format(as.Date(tobeupdatedactivity$date),'%Y-%m-%d'), sum) 
 ```
 
-```{r histogramImputeData}
 
+```r
 hist(stepsImputedData)
+```
+
+![plot of chunk histogramImputeData](figure/histogramImputeData-1.png) 
 
 
-``` 
-
-```{r meanImputedData}
+```r
 mean(stepsImputedData)
-median(stepsImputedData)
+```
 
+```
+## [1] 10766.19
+```
+
+```r
+median(stepsImputedData)
+```
+
+```
+## [1] 10766.19
 ```
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
-```{r}
 
+```r
 library(lubridate)
 
 weekdayPlot <- aggregate(steps ~ interval, data=subset(tobeupdatedactivity,wday(tobeupdatedactivity$date) > 1 & wday(tobeupdatedactivity$date) < 7 ), mean)
@@ -100,14 +124,22 @@ weekdayPlot$DaysofWeek <- c("weekday")
 weekendPlot$DaysofWeek <- c("weekend")
 
 daysofweekDF <- rbind(weekdayPlot,weekendPlot)
-
 ```
 
-```{r plot weekday/weekend }
+
+```r
 library(ggplot2)
+```
+
+```
+## Use suppressPackageStartupMessages to eliminate package startup messages.
+```
+
+```r
 p <- ggplot(daysofweekDF, aes(interval, steps)) + geom_line()
 p + facet_grid(DaysofWeek ~ .)
-
 ```
+
+![plot of chunk plot weekday/weekend](figure/plot weekday/weekend-1.png) 
 
 
