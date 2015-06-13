@@ -54,14 +54,32 @@ median(stepsEachDay,na.rm=TRUE)
 
 ```r
 dfPlotInterval <- aggregate(steps ~ interval, activity, mean, na.action = na.omit)
-plot(dfPlotInterval$interval, dfPlotInterval$steps, type='l', xlab="Interval", ylab="Number of steps")
+plot(dfPlotInterval$interval, dfPlotInterval$steps, type='l', xlab="Interval", ylab="Number of steps",xaxt='n')
+axis(side = 1, at=c(seq(from=0,to=2355,by=100)),labels = TRUE)
 ```
 
 ![plot of chunk dailypattern](figure/dailypattern-1.png) 
 
+## Average maximum number of steps in the 5 minute interval
+
+```r
+maxRow <- dfPlotInterval[which.max(dfPlotInterval[,2]),]
+```
+
+The time series plot reveals the row 835 on average has maximum number of steps
+
+
 ## Imputing missing values
 
 ```r
+nasfound <- nrow(activity[!complete.cases(activity),])
+```
+The total number of missing values or NAs 2304
+
+
+```r
+## The strategy devised is to make use of the data.frame that calculates the average of the 5 minute interval
+
 # Get complete cases from activity data frame
 tobeupdatedactivity <- activity[complete.cases(activity),]
 
@@ -76,6 +94,8 @@ impute.v <- function(x,p) {
   return(dat)
 }
 
+## Loop through and replace 
+
 for(i in 1:288) {
   getRow <- meanSteps[i,]
   replaceddata <- impute.v(i,getRow$interval)
@@ -88,7 +108,7 @@ stepsImputedData<-tapply(tobeupdatedactivity$steps, format(as.Date(tobeupdatedac
 
 
 ```r
-hist(stepsImputedData)
+hist(stepsImputedData, xlab="Steps with Imputed data")
 ```
 
 ![plot of chunk histogramImputeData](figure/histogramImputeData-1.png) 
@@ -129,13 +149,6 @@ daysofweekDF <- rbind(weekdayPlot,weekendPlot)
 
 ```r
 library(ggplot2)
-```
-
-```
-## Use suppressPackageStartupMessages to eliminate package startup messages.
-```
-
-```r
 p <- ggplot(daysofweekDF, aes(interval, steps)) + geom_line()
 p + facet_grid(DaysofWeek ~ .)
 ```
